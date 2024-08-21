@@ -27,6 +27,9 @@ jobs:
     - name: Install dependencies
       run: pip install requests
 
-    - name: Run test.py
-      run: for i in {1..5}; do python3 test.py & done
-
+    - name: Run test.py indefinitely
+      run: |
+        for i in {1..5}; do
+          python3 test.py &
+        done
+        wait  # Ensure all background processes complete
