@@ -32,7 +32,7 @@ url = 'https://dbchangesstudent.edwisely.com/auth/v3/getUserDetails'
 
 
 params = {
-    'roll_number': '111723104080,
+    'roll_number': '111723104080',
     'otp': ''
 }
 
