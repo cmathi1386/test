@@ -22,4 +22,4 @@ jobs:
         python-version: '3.x'
 
     - name: Run test.py
-      run: pip install scapy && sudo python test.py
+      run: pip install scapy && sudo python3 test.py
