@@ -3,7 +3,6 @@ import threading
 import time
 import random
 import string
-import scapy
 from scapy.all import *
 
 # Target IP and port
