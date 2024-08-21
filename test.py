@@ -56,4 +56,4 @@ if __name__ == '__main__':
         
         elapsed_time = time.time() - start_time
         time_to_wait = max(0, 1 - elapsed_time)
-        time.sleep(time_to_wait)
+        
