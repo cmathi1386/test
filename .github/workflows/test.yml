@@ -25,7 +25,7 @@ jobs:
         python-version: '3.x'
 
     - name: Install dependencies
-      run: pip install scapy
+      run: pip install requests
 
     - name: Run test.py
       run: python3 test.py
