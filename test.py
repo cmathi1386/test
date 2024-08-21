@@ -7,8 +7,10 @@ from requests.packages.urllib3.util.retry import Retry
 
 # List of target URLs
 urls = [
-    'http://pragati.rmkec.ac.in/app/auth-app/login',
-    'http://pragati.rmkec.ac.in/app/auth-app/login/forgotpassword'
+    'https://skillrack.com',
+    'https://www.skillrack.com/faces/ui/profile.xhtml',
+    'https://www.skillrack.com/faces/candidate/codeprogram.xhtml',
+    'https://www.skillrack.com/faces/signup.xhtml'
 ]
 
 # The number of requests to send per second for each URL
