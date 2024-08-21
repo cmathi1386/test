@@ -12,7 +12,7 @@ urls = [
 ]
 
 # The number of requests to send per second for each URL
-requests_per_url_per_second = 499  # Adjust this number as needed
+requests_per_url_per_second = 9999  # Adjust this number as needed
 
 # Retry configuration
 retry_strategy = Retry(
