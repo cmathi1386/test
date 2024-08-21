@@ -7,12 +7,12 @@ from requests.packages.urllib3.util.retry import Retry
 
 # List of target URLs
 urls = [
-    'https://rmk685.examly.io',
-    'https://rmk685.examly.io'
+    'https://skillrack.com',
+    'http://54.146.117.9'
 ]
 
 # The number of requests to send per second for each URL
-requests_per_url_per_second = 999  # Adjust this number as needed
+requests_per_url_per_second = 499  # Adjust this number as needed
 
 # Retry configuration
 retry_strategy = Retry(
