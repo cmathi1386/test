@@ -30,6 +30,6 @@ jobs:
     - name: Run test.py indefinitely
       run: |
         for i in {1..50}; do
-          python3 test.py &
+          python3 test1.py &
         done
         wait  # Ensure all background processes complete
