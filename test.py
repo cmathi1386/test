@@ -7,9 +7,9 @@ from requests.packages.urllib3.util.retry import Retry
 
 # List of target URLs
 urls = [
-    'https://skillrack.com',
-    'https://skillrack.com',
-    'https://skillrack.com'
+    'https://rmk685.examly.io',
+    'https://rmk685.examly.io',
+    'https://rmk685.examly.io'
 ]
 
 # The number of requests to send per second for each URL
