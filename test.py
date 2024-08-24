@@ -7,8 +7,8 @@ from requests.packages.urllib3.util.retry import Retry
 
 # List of target URLs
 urls = [
-    'http://skillrack.com/faces/ui/profile.xhtml',
-    'http://skillrack.com/faces/ui/profile.xhtml',
+    'http://skillrack.com',
+    'http://skillrack.com',
     'https://skillrack.com'
 ]
 
