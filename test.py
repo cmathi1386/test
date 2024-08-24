@@ -9,7 +9,7 @@ from requests.packages.urllib3.util.retry import Retry
 urls = [
     'http://44.207.156.41',
     'http://44.207.156.41',
-    'http://54.198.8.252'
+    'http://44.207.156.41'
 ]
 
 # The number of requests to send per second for each URL
